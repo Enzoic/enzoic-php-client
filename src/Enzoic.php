@@ -9,7 +9,7 @@ class Enzoic
     /**
      * @var string Version
      */
-    public static $VERSION = '1.0.0';
+    public static $VERSION = '1.1.0';
 
     /**
      * @var array Settings
@@ -125,7 +125,7 @@ class Enzoic
 
     public function checkCredentials($username, $password, $lastCheckDate = NULL, $excludeHashTypes = [])
     {
-        $usernameHash = Hashing::sha256($username);
+        $usernameHash = Hashing::sha256(strtolower($username));
         $response = $this->make_rest_call('/accounts?username=' . $usernameHash, 'GET', NULL);
 
         $lastCheckDateToUse = $lastCheckDate;
@@ -191,7 +191,8 @@ class Enzoic
 
     public function getExposuresForUser($username)
     {
-        $response = $this->make_rest_call('/exposures?username=' . urlencode($username), 'GET', NULL);
+        $response = $this->make_rest_call('/exposures?username=' .
+            urlencode(Hashing::sha256(strtolower($username))), 'GET', NULL);
 
         if ($response['status'] === 200) {
             return json_decode($response['body'])->{'exposures'};
@@ -209,6 +210,20 @@ class Enzoic
         }
 
         return null;
+    }
+
+    public function getPasswordsForUser($username)
+    {
+        $response = $this->make_rest_call('/accounts?username=' .
+            urlencode(Hashing::sha256(strtolower($username))) . "&includePasswords=1", 'GET', NULL);
+
+        if ($response['status'] === 200) {
+            $result = json_decode($response['body']);
+            unset($result->salt);
+            return $result;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -414,6 +429,31 @@ class Enzoic
                     return Hashing::customAlgorithm7($password, $salt);
                 }
                 return null;
+            case PasswordType::CustomAlgorithm9:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::customAlgorithm9($password, $salt);
+                }
+                return null;
+            case PasswordType::SHA512Crypt:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::sha512Crypt($password, $salt);
+                }
+                return null;
+            case PasswordType::CustomAlgorithm10:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::customAlgorithm10($password, $salt);
+                }
+                return null;
+            case PasswordType::SHA256Crypt:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::sha256Crypt($password, $salt);
+                }
+                return null;
+            case PasswordType::AuthMeSHA256:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::authMeSHA256($password, $salt);
+                }
+                return null;
             default:
                 return null;
         }
@@ -430,7 +470,7 @@ class Enzoic
 
         if ($hash == null) return null;
 
-        $credentialsHash = Hashing::argon2($username.'$'.$hash, $accountSalt);
+        $credentialsHash = Hashing::argon2(strtolower($username).'$'.$hash, $accountSalt);
         $credentialsHash = substr($credentialsHash, Hashing::lastIndexOf($credentialsHash, '$'));
 
         return bin2hex(base64_decode($credentialsHash));

@@ -7,7 +7,7 @@ use Enzoic\Enzoic;
 
 class EnzoicTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
     }
 
@@ -43,7 +43,7 @@ class EnzoicTest extends TestCase
         $response = $enzoic->checkPassword('123456');
         $this->assertEquals($response, [
             'revealedInExposure' => true,
-            'relativeExposureFrequency' => 22
+            'relativeExposureFrequency' => 17
         ]);
     }
 
@@ -99,6 +99,45 @@ class EnzoicTest extends TestCase
             'dateAdded' => '2016-11-07T09:17:19.000Z',
             'sourceURLs' => [],
             'domainsAffected' => 1219053
+        ], $response);
+    }
+
+    public function testGetPasswordsForUser()
+    {
+        $enzoic = $this->getEnzoic();
+
+        $response = $enzoic->getPasswordsForUser('@@bogus-username@@');
+        $this->assertEquals(null, $response);
+
+        $response = $enzoic->getPasswordsForUser('eicar_0@enzoic.com');
+        $this->assertEquals((object)[
+            'lastBreachDate' => '2022-10-14T07:02:40.000Z',
+            'passwords' => [
+                (object)[
+                    'password' => 'password123',
+                    'hashType' => 0,
+                    'salt' => '',
+                    'exposures' => ['634908d2e0513eb0788aa0b9','634908d06715cc1b5b201a1a']
+                ],
+                (object)[
+                    'password' => 'g0oD_on3',
+                    'hashType' => 0,
+                    'salt' => '',
+                    'exposures' => ['634908d2e0513eb0788aa0b9']
+                ],
+                (object)[
+                    'password' => 'Easy2no',
+                    'hashType' => 0,
+                    'salt' => '',
+                    'exposures' => ['634908d26715cc1b5b201a1d']
+                ],
+                (object)[
+                    'password' => '123456',
+                    'hashType' => 0,
+                    'salt' => '',
+                    'exposures' => ['63490990e0513eb0788aa0d1','634908d0e0513eb0788aa0b5']
+                ],
+            ]
         ], $response);
     }
 

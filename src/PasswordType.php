@@ -41,6 +41,12 @@ abstract class PasswordType
     const SHA1Dash = 34; // sha1(--salt--password--)
     const SHA384 = 35;
     const CustomAlgorithm7 = 36; // sha256hmac(sha1(id).pass.salt) (Wattpad)
+    const CustomAlgorithm8 = 37;
+    const CustomAlgorithm9 = 38;
+    const SHA512Crypt = 39;
+    const CustomAlgorithm10 = 40;
+    const SHA256Crypt = 41;
+    const AuthMeSHA256 = 42;
 
     const Unknown = 97;
     const UnusablePassword = 98;

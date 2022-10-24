@@ -205,12 +205,41 @@ class Hashing
         return hash_hmac('sha256', $derivedSalt.$toHash, $secret);
     }
 
+    public static function customAlgorithm9($toHash, $salt)
+    {
+        $result = self::sha512($toHash.$salt);
+        for ($i = 0; $i < 11; $i++) {
+            $result = self::sha512($result);
+        }
+        return $result;
+    }
+
+    public static function customAlgorithm10($toHash, $salt)
+    {
+        return self::sha512($toHash.":".$salt);
+    }
+
+    public static function authMeSHA256($toHash, $salt)
+    {
+        return '$SHA$'.$salt."$".self::sha256(self::sha256($toHash).$salt);
+    }
+
     public static function crc32($toHash)
     {
         return hash('crc32b', $toHash);
     }
 
     public static function md5Crypt($toHash, $salt)
+    {
+        return crypt($toHash, $salt);
+    }
+
+    public static function sha256Crypt($toHash, $salt)
+    {
+        return crypt($toHash, $salt);
+    }
+
+    public static function sha512Crypt($toHash, $salt)
     {
         return crypt($toHash, $salt);
     }
@@ -293,7 +322,7 @@ class Hashing
     {
         // Convert the password from UTF8 to UTF16 (little endian)
         $preHash = iconv('UTF-8', 'UTF-16LE', $toHash);
-        $hash = bin2hex(mhash(MHASH_MD4, $preHash));
+        $hash = hash("md4", $preHash);
         return $hash;
     }
 

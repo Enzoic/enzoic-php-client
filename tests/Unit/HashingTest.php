@@ -7,7 +7,7 @@ use Enzoic\Hashing;
 
 class HashingTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp() : void
     {
     }
 
@@ -172,8 +172,8 @@ class HashingTest extends TestCase
 
     public function testNTLM()
     {
-        $this->assertEquals('8846f7eaee8fb117ad06bdd830b7586c',
-            Hashing::ntlm('password'));
+        $this->assertEquals('32ed87bdb5fdc5e9cba88547376818d4',
+            Hashing::ntlm('123456'));
     }
 
     public function testSHA1Dash()
@@ -186,6 +186,36 @@ class HashingTest extends TestCase
     {
         $this->assertEquals('0008fc1cbf16498623cf3772dc3da688a75d19cff416bc22f88807665700f033',
             Hashing::customAlgorithm7('Laika5882', '9602501'));
+    }
+
+    public function testCustomAlgorithm9()
+    {
+        $this->assertEquals('07c691fa8b022b52ac1c44cab3e056b344a7945b6eb9db727e3842b28d94fe18c17fe5b47b1b9a29d8149acbd7b3f73866cc12f0a8a8b7ab4ac9470885e052dc',
+            Hashing::customAlgorithm9('0rangepeel', '6kpcxVSjagLgsNCUCr-D'));
+    }
+
+    public function testCustomAlgorithm10()
+    {
+        $this->assertEquals('bd17b9d14010a1d4f8c8077f1be1e20b9364d9979bbcf8591337e952cc6037026aa4a2025543d39169022344b4dd1d20f499395533e35705296034bbf7e7d663',
+            Hashing::customAlgorithm10('chatbooks', 'NqXCvAHUpAWAco3hVTG5Sg0FfmJRQPKi0LvcHwylzXHhSNuWwvYdMSSGzswi0ZdJ'));
+    }
+
+    public function testAuthMeSHA256()
+    {
+        $this->assertEquals('$SHA$7218532375810603$bfede293ecf6539211a7305ea218b9f3f608953130405cda9eaba6fb6250f824',
+            Hashing::authMeSHA256('hashcat', '7218532375810603'));
+    }
+
+    public function testSHA512Crypt()
+    {
+        $this->assertEquals('$6$52450745$k5ka2p8bFuSmoVT1tzOyyuaREkkKBcCNqoDKzYiJL9RaE8yMnPgh2XzzF0NDrUhgrcLwg78xs1w5pJiypEdFX/',
+            Hashing::sha512Crypt('hashcat', '$6$52450745'));
+    }
+
+    public function testSHA256Crypt()
+    {
+        $this->assertEquals('$5$rounds=5000$GX7BopJZJxPc/KEK$le16UF8I2Anb.rOrn22AUPWvzUETDGefUmAV8AZkGcD',
+            Hashing::sha512Crypt('hashcat', '$5$rounds=5000$GX7BopJZJxPc/KEK'));
     }
 
     public function testArgon2()
