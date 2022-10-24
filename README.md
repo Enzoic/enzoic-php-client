@@ -13,7 +13,7 @@ This README covers the following topics:
 To include the Enzoic library in your project using Composer: 
 
 ```sh
-$ composer require monolog/monolog
+$ composer require enzoic/enzoic
 ```
 
 

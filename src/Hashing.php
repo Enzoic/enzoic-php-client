@@ -170,7 +170,7 @@ class Hashing
 
     public static function customAlgorithm1($toHash, $salt)
     {
-        return self::xor(self::sha512Binary($toHash . $salt), self::whirlpoolBinary($salt . $toHash));
+        return self::xord(self::sha512Binary($toHash . $salt), self::whirlpoolBinary($salt . $toHash));
     }
 
     public static function customAlgorithm2($toHash, $salt)
@@ -336,7 +336,7 @@ class Hashing
         return hash('sha384', $toHash);
     }
 
-    public static function xor($value1, $value2)
+    public static function xord($value1, $value2)
     {
         // Our output text
         $outText = '';
