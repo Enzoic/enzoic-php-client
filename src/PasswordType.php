@@ -45,8 +45,9 @@ abstract class PasswordType
     const CustomAlgorithm9 = 38;
     const SHA512Crypt = 39;
     const CustomAlgorithm10 = 40;
-    const SHA256Crypt = 41;
+    const HMACSHA1_SaltAsKey = 41;
     const AuthMeSHA256 = 42;
+    const SHA256Crypt = 43;
 
     const Unknown = 97;
     const UnusablePassword = 98;

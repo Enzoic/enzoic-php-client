@@ -206,16 +206,30 @@ class HashingTest extends TestCase
             Hashing::authMeSHA256('hashcat', '7218532375810603'));
     }
 
+    public function testHMACSHA1SaltAsKey()
+    {
+        $this->assertEquals('d89c92b4400b15c39e462a8caa939ab40c3aeeea',
+            Hashing::hmacSHA1SaltAsKey('hashcat', '1234'));
+    }
+
     public function testSHA512Crypt()
     {
         $this->assertEquals('$6$52450745$k5ka2p8bFuSmoVT1tzOyyuaREkkKBcCNqoDKzYiJL9RaE8yMnPgh2XzzF0NDrUhgrcLwg78xs1w5pJiypEdFX/',
             Hashing::sha512Crypt('hashcat', '$6$52450745'));
+        $this->assertEquals('$6$rounds=5000$52450745$k5ka2p8bFuSmoVT1tzOyyuaREkkKBcCNqoDKzYiJL9RaE8yMnPgh2XzzF0NDrUhgrcLwg78xs1w5pJiypEdFX/',
+            Hashing::sha512Crypt('hashcat', '$6$rounds=5000$52450745'));
+        $this->assertEquals('$6$rounds=4000$52450745$SpwN1flz4M8T.VckR9l.UofKPTtPvUx3ZfNSAQ.ruUsFBCvC1mz49quqhSrPjK4p25hfLcDZF/86iiA0n38Dh/',
+            Hashing::sha512Crypt('hashcat', '$6$rounds=4000$52450745'));
     }
 
     public function testSHA256Crypt()
     {
+        $this->assertEquals('$5$GX7BopJZJxPc/KEK$le16UF8I2Anb.rOrn22AUPWvzUETDGefUmAV8AZkGcD',
+            Hashing::sha512Crypt('hashcat', '$5$GX7BopJZJxPc/KEK'));
         $this->assertEquals('$5$rounds=5000$GX7BopJZJxPc/KEK$le16UF8I2Anb.rOrn22AUPWvzUETDGefUmAV8AZkGcD',
             Hashing::sha512Crypt('hashcat', '$5$rounds=5000$GX7BopJZJxPc/KEK'));
+        $this->assertEquals('$5$rounds=4000$GX7BopJZJxPc/KEK$sn.Ds3.Gebi0n6vih/PyOUqlagz5FGk1ITvNh7f1ZMC',
+            Hashing::sha512Crypt('hashcat', '$5$rounds=4000$GX7BopJZJxPc/KEK'));
     }
 
     public function testArgon2()

@@ -454,6 +454,11 @@ class Enzoic
                     return Hashing::authMeSHA256($password, $salt);
                 }
                 return null;
+            case PasswordType::HMACSHA1_SaltAsKey:
+                if ($salt != null && strlen($salt) > 0) {
+                    return Hashing::hmacSHA1SaltAsKey($password, $salt);
+                }
+                return null;
             default:
                 return null;
         }

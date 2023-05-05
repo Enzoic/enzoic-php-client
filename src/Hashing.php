@@ -224,6 +224,11 @@ class Hashing
         return '$SHA$'.$salt."$".self::sha256(self::sha256($toHash).$salt);
     }
 
+    public static function hmacSHA1SaltAsKey($toHash, $salt)
+    {
+        return hash_hmac('sha1', $toHash, $salt);
+    }
+
     public static function crc32($toHash)
     {
         return hash('crc32b', $toHash);
