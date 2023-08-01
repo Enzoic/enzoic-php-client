@@ -43,7 +43,7 @@ class EnzoicTest extends TestCase
         $response = $enzoic->checkPassword('123456');
         $this->assertEquals($response, [
             'revealedInExposure' => true,
-            'relativeExposureFrequency' => 17
+            'relativeExposureFrequency' => 9
         ]);
     }
 
@@ -98,7 +98,9 @@ class EnzoicTest extends TestCase
             ],
             'dateAdded' => '2016-11-07T09:17:19.000Z',
             'sourceURLs' => [],
-            'domainsAffected' => 1219053
+            'domainsAffected' => 1219053,
+            'source' => 'Unspecified',
+            'sourceFileCount' => 1
         ], $response);
     }
 
@@ -137,6 +139,35 @@ class EnzoicTest extends TestCase
                     'salt' => '',
                     'exposures' => ['63490990e0513eb0788aa0d1','634908d0e0513eb0788aa0b5']
                 ],
+            ]
+        ], $response);
+
+        $response = $enzoic->getPasswordsForUser('eicar_8@enzoic.com', true);
+        $this->assertEquals((object)[
+            'lastBreachDate' => '2017-04-08T02:07:44.000Z',
+            'passwords' => [
+                (object)[
+                    'password' => '$2a$04$yyJQsNrcBeTRgYNf4HCTxefTL9n7rFYywPxdXU9YRRTgkaZaNkgyu',
+                    'hashType' => 8,
+                    'salt' => '$2a$04$yyJQsNrcBeTRgYNf4HCTxe',
+                    'exposures' => [
+                        (object)[
+                            'id' => '58e845f04d6db222103001df',
+                            'title' => 'passwordping.com test breach BCrypt',
+                            'entries' => 1,
+                            'date' => '2010-01-01T07:00:00.000Z',
+                            'category' => 'Testing Ignore',
+                            'source' => 'Testing - Ignore',
+                            'passwordType' => 'BCrypt',
+                            'exposedData' => [
+                                'Emails', 'Passwords'
+                            ],
+                            'dateAdded' => '2017-04-08T02:07:44.000Z',
+                            'sourceURLs' => [],
+                            'sourceFileCount' => 1,
+                            'domainsAffected' => 1                        ]
+                    ]
+                ]
             ]
         ], $response);
     }

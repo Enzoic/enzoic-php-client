@@ -83,7 +83,7 @@ class Enzoic
     /**
      * Checks whether the provided password is in the Enzoic database of known, compromised passwords.  Returns extended
      * information about the compromised status of the password.
-     * @see <a href="https://www.enzoic.com/docs/passwords-api">https://www.enzoic.com/docs/passwords-api</a>
+     * @see <a href="https://www.enzoic.com/docs/passwords-api">https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/passwords-api</a>
      * @param $password string The password to be checked
      * @return array|null If the password is compromised, returns an array with two members, revealedInExposure and
      * relativeExposureFrequency (see docs for more explanation), is returned.  If not compromised, a null is returned.
@@ -123,6 +123,22 @@ class Enzoic
         return null;
     }
 
+    /**
+     * Checks whether the provided credentials are in the Enzoic database of known, compromised credentials.
+     * @see <a href="https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/credentials-api/hashed-credentials-api>
+     * https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/credentials-api/hashed-credentials-api</a>
+     * @param $username string the username to check - may be an email address or username
+     * @param $password string the password to check
+     * @param $lastCheckDate DateTime (Optional) The timestamp for the last check you performed for this user.  If the date/time you provide
+     * for the last check is greater than the timestamp Enzoic has for the last breach affecting this user, the check will
+     * not be performed.This can be used to substantially increase performance.Can be set to null if no last check was performed
+     * or the credentials have changed since.
+     * @param $excludeHashTypes array (Optional) An array of PasswordTypes to ignore when calculating hashes for the credentials check.
+     * By excluding computationally expensive PasswordTypes, such as BCrypt, it is possible to balance the performance of this
+     * call against security.Can be set to null if you don't wish to exclude any hash types.
+     * @return bool true if the credentials are known to be compromised, false otherwise
+     * @throws Exception
+     */
     public function checkCredentials($username, $password, $lastCheckDate = NULL, $excludeHashTypes = [])
     {
         $usernameHash = Hashing::sha256(strtolower($username));
@@ -169,7 +185,7 @@ class Enzoic
                 }
 
                 if ($queryString != '') {
-                    $response = $this->make_rest_call('/credentials?'.$queryString, 'GET', null);
+                    $response = $this->make_rest_call('/credentials?' . $queryString, 'GET', null);
 
                     if ($response['status'] == 200) {
                         $parsedResponse = json_decode($response['body']);
@@ -189,6 +205,14 @@ class Enzoic
         return false;
     }
 
+    /**
+     * Returns all of the credentials Exposures that have been found for a given username.
+     * @see <a href="https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/exposures-api/get-exposures-for-an-email-address">
+     * https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/exposures-api/get-exposures-for-an-email-address</a>
+     * @param $username string The username or email address of the user to check
+     * @return array The response contains an array of exposure IDs for this user.  These IDs can be used with the
+     * getExposureDetails call to get additional information about each Exposure.
+     */
     public function getExposuresForUser($username)
     {
         $response = $this->make_rest_call('/exposures?username=' .
@@ -201,6 +225,14 @@ class Enzoic
         }
     }
 
+    /**
+     * Returns the detailed information for a credentials Exposure given its ID.
+     * @see <a href="https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/exposures-api/retrieve-details-for-an-exposure">
+     * https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/exposures-api/retrieve-details-for-an-exposure
+     * </a>
+     * @param $exposureID string The ID of the Exposure
+     * @return mixed|null The response body contains the details of the Exposure or null if the Exposure ID could not be found.
+     */
     public function getExposureDetails($exposureID)
     {
         $response = $this->make_rest_call('/exposures?id=' . urlencode($exposureID), 'GET', NULL);
@@ -212,10 +244,20 @@ class Enzoic
         return null;
     }
 
-    public function getPasswordsForUser($username)
+    /**
+     * Returns a list of passwords that Enzoic has found for a specific user.  This call must be enabled for your account or you will
+     * receive a rejection when attempting to call it.
+     * @param $username string The username to return passwords for
+     * @param $includeExposureDetails bool (Optional) Whether to include full details about the exposures where the password was found - otherwise just returns the Exposure IDs, which can later be used with GetExposureDetails to retrieve full details.
+     * @return object|null A list of any exposed passwords Enzoic has for the specified user
+     * @see <a href="https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/credentials-api/cleartext-credentials-api">
+     * https://docs.enzoic.com/enzoic-api-developer-documentation/api-reference/credentials-api/cleartext-credentials-api</a>
+     */
+    public function getPasswordsForUser($username, $includeExposureDetails = false)
     {
         $response = $this->make_rest_call('/accounts?username=' .
-            urlencode(Hashing::sha256(strtolower($username))) . "&includePasswords=1", 'GET', NULL);
+            urlencode(Hashing::sha256(strtolower($username))) . "&includePasswords=1" .
+            ($includeExposureDetails == true ? "&includeExposureDetails=1" : ""), 'GET', NULL);
 
         if ($response['status'] === 200) {
             $result = json_decode($response['body']);
@@ -229,9 +271,9 @@ class Enzoic
     /**
      * Check if the current PHP setup is sufficient to run Enzoic.
      *
+     * @return void
      * @throws Exception If any required dependencies are missing
      *
-     * @return void
      */
     private function check_compatibility()
     {
@@ -464,7 +506,8 @@ class Enzoic
         }
     }
 
-    private function calcCredentialsHash($username, $password, $accountSalt, $hashSpec) {
+    private function calcCredentialsHash($username, $password, $accountSalt, $hashSpec)
+    {
         $salt = NULL;
 
         if (property_exists($hashSpec, 'salt')) {
@@ -475,7 +518,7 @@ class Enzoic
 
         if ($hash == null) return null;
 
-        $credentialsHash = Hashing::argon2(strtolower($username).'$'.$hash, $accountSalt);
+        $credentialsHash = Hashing::argon2(strtolower($username) . '$' . $hash, $accountSalt);
         $credentialsHash = substr($credentialsHash, Hashing::lastIndexOf($credentialsHash, '$'));
 
         return bin2hex(base64_decode($credentialsHash));
